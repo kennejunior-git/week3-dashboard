@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Posts Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Posts Dashboard</h1>
+    <p class="sub">Data from the JSONPlaceholder API</p>
+  </header>
+
+  <section class="controls">
+    <input id="search" type="search" placeholder="Search by title, text or author" aria-label="Search posts">
+    <select id="author" aria-label="Filter by author">
+      <option value="all">All authors</option>
+    </select>
+    <select id="sort" aria-label="Sort posts">
+      <option value="name">Title (A–Z)</option>
+      <option value="words-desc">Words (most to least)</option>
+      <option value="words-asc">Words (least to most)</option>
+    </select>
+  </section>
+
+  <section id="stats" class="stats" aria-live="polite"></section>
+  <p id="status" class="status" role="status"></p>
+  <main id="grid" class="grid"></main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

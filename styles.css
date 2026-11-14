@@ -1,0 +1,29 @@
+:root { --ink:#1b2a2f; --bg:#eef4f3; --card:#fff; --accent:#0f8b8d; --line:#d3e0de; --bad:#c0392b; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); padding:20px; }
+.top { max-width:1100px; margin:0 auto 16px; }
+.top h1 { margin:0; }
+.sub { margin:4px 0 0; color:#587076; }
+.controls, .stats, .status, .grid { max-width:1100px; margin-left:auto; margin-right:auto; }
+.controls { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+.controls input, .controls select { font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+.controls input { flex:1 1 240px; }
+.controls :focus-visible, .retry:focus-visible { outline:3px solid #8fd3d4; outline-offset:2px; }
+.stats { display:flex; flex-wrap:wrap; gap:18px; margin-bottom:10px; font-size:.95rem; color:#35545a; }
+.stats strong { color:var(--ink); }
+.status { min-height:1.4em; }
+.status.error { color:var(--bad); font-weight:600; }
+.retry { margin-left:10px; font:inherit; padding:6px 12px; border:0; border-radius:6px; background:var(--accent); color:#fff; cursor:pointer; }
+.spinner { display:inline-block; width:18px; height:18px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; vertical-align:-4px; margin-right:8px; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration:3s; } }
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+.card { background:var(--card); border-radius:10px; overflow:hidden; border:1px solid var(--line); }
+.card img { display:block; width:100%; height:130px; object-fit:cover; background:#ddd; }
+.card .body { padding:12px 14px 14px; }
+.card h2 { margin:0 0 8px; font-size:1.05rem; }
+.card dl { margin:0; display:grid; grid-template-columns:auto 1fr; gap:3px 10px; font-size:.9rem; }
+.card dt { color:#587076; }
+.card dd { margin:0; }
+.card h2 { text-transform: capitalize; line-height:1.3; }
+.card p { margin:0 0 10px; font-size:.9rem; color:#35545a; }

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JavaScript Quiz</title>
+<style>
+  :root { --ink:#1d2433; --paper:#f5f7fb; --card:#fff; --accent:#2f5bea; --ok:#1f9d55; --bad:#d64545; --line:#d9deea; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center; padding:16px;
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--paper); color:var(--ink); }
+  .quiz { width:100%; max-width:560px; background:var(--card); border-radius:14px; padding:28px; box-shadow:0 6px 24px rgba(20,30,60,.08); }
+  h1 { margin:0 0 4px; font-size:1.4rem; }
+  .progress { height:8px; background:var(--line); border-radius:99px; overflow:hidden; margin:14px 0 6px; }
+  .progress-bar { height:100%; width:0; background:var(--accent); transition:width .3s; }
+  .counter { font-size:.85rem; color:#5b6579; margin:0 0 18px; }
+  .question { font-size:1.15rem; line-height:1.4; margin:0 0 16px; }
+  .options { display:grid; gap:10px; }
+  .option { text-align:left; font:inherit; padding:12px 14px; background:#fff; border:2px solid var(--line); border-radius:10px; cursor:pointer; }
+  .option:hover:not(:disabled) { border-color:var(--accent); }
+  .option:focus-visible, .btn:focus-visible { outline:3px solid #9db4ff; outline-offset:2px; }
+  .option.correct { border-color:var(--ok); background:#e8f6ee; }
+  .option.wrong { border-color:var(--bad); background:#fcebeb; }
+  .option:disabled { cursor:default; }
+  .feedback { min-height:1.4em; margin:14px 0 0; font-weight:600; }
+  .btn { margin-top:16px; font:inherit; font-weight:600; padding:11px 20px; border:0; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .hidden { display:none; }
+  .score { font-size:3rem; font-weight:700; margin:8px 0; }
+  .review { margin:14px 0 0; padding-left:18px; font-size:.92rem; color:#394257; }
+  .review li { margin-bottom:6px; }
+</style>
+</head>
+<body>
+<main class="quiz">
+  <section id="quiz-screen">
+    <h1>JavaScript Quiz</h1>
+    <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+    <p class="counter" id="counter"></p>
+    <h2 class="question" id="question"></h2>
+    <div class="options" id="options"></div>
+    <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+    <button class="btn" id="next-btn" disabled>Next</button>
+  </section>
+
+  <section id="result-screen" class="hidden">
+    <h1>Quiz complete</h1>
+    <div class="score" id="score"></div>
+    <p id="message"></p>
+    <ul class="review" id="review"></ul>
+    <button class="btn" id="restart-btn">Try again</button>
+  </section>
+</main>
+
+<script>
+// ---------- Data: 10 questions stored in an array of objects ----------
+const questions = [
+  { text: "Which keyword declares a block-scoped variable that can be reassigned?", options: ["var", "let", "const", "static"], answer: 1 },
+  { text: "What does typeof null return?", options: ["\"null\"", "\"undefined\"", "\"object\"", "\"number\""], answer: 2 },
+  { text: "Which method adds an element to the end of an array?", options: ["push()", "pop()", "shift()", "unshift()"], answer: 0 },
+  { text: "What is the result of '5' + 3 in JavaScript?", options: ["8", "\"53\"", "NaN", "Error"], answer: 1 },
+  { text: "Which operator checks both value and type?", options: ["==", "=", "===", "!="], answer: 2 },
+  { text: "Which method selects an element by its id?", options: ["querySelectorAll()", "getElementById()", "getElementsByClassName()", "createElement()"], answer: 1 },
+  { text: "Which array method creates a new array with the results of calling a function on every element?", options: ["filter()", "forEach()", "map()", "reduce()"], answer: 2 },
+  { text: "How do you write a function in arrow syntax?", options: ["function => ()", "() => {}", "=> function()", "() -> {}"], answer: 1 },
+  { text: "Which event fires when a user clicks an element?", options: ["onpress", "onhover", "click", "submit"], answer: 2 },
+  { text: "What does JSON.parse() do?", options: ["Converts an object to a string", "Converts a JSON string to an object", "Sends data to a server", "Deletes a property"], answer: 1 }
+];
+
+// ---------- State ----------
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+let userAnswers = []; // records the chosen option for each question
+
+// ---------- DOM references ----------
+const quizScreen = document.getElementById("quiz-screen");
+const resultScreen = document.getElementById("result-screen");
+const counterEl = document.getElementById("counter");
+const questionEl = document.getElementById("question");
+const optionsEl = document.getElementById("options");
+const feedbackEl = document.getElementById("feedback");
+const nextBtn = document.getElementById("next-btn");
+const progressBar = document.getElementById("progress-bar");
+
+// ---------- Functions ----------
+function showQuestion() {
+  const q = questions[currentIndex];
+  answered = false;
+  counterEl.textContent = "Question " + (currentIndex + 1) + " of " + questions.length;
+  progressBar.style.width = (currentIndex / questions.length) * 100 + "%";
+  questionEl.textContent = q.text;
+  feedbackEl.textContent = "";
+  feedbackEl.style.color = "";
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === questions.length - 1 ? "See result" : "Next";
+
+  optionsEl.innerHTML = "";
+  q.options.forEach(function (text, i) {
+    const btn = document.createElement("button");
+    btn.className = "option";
+    btn.textContent = text;
+    btn.addEventListener("click", function () { selectAnswer(i); });
+    optionsEl.appendChild(btn);
+  });
+}
+
+function selectAnswer(choice) {
+  if (answered) return;
+  answered = true;
+  const q = questions[currentIndex];
+  userAnswers.push(choice);
+
+  const buttons = optionsEl.querySelectorAll(".option");
+  buttons.forEach(function (b, i) {
+    b.disabled = true;
+    if (i === q.answer) b.classList.add("correct");
+    if (i === choice && choice !== q.answer) b.classList.add("wrong");
+  });
+
+  if (choice === q.answer) {
+    score++;
+    feedbackEl.textContent = "Correct!";
+    feedbackEl.style.color = "var(--ok)";
+  } else {
+    feedbackEl.textContent = "Not quite. The answer is: " + q.options[q.answer];
+    feedbackEl.style.color = "var(--bad)";
+  }
+  nextBtn.disabled = false;
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex < questions.length) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  quizScreen.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+  document.getElementById("score").textContent = score + " / " + questions.length;
+
+  const pct = score / questions.length;
+  let msg = "Keep practising, you'll get there.";
+  if (pct === 1) msg = "Perfect score!";
+  else if (pct >= 0.7) msg = "Great work!";
+  else if (pct >= 0.4) msg = "Good effort. Review the ones you missed.";
+  document.getElementById("message").textContent = msg;
+
+  const review = document.getElementById("review");
+  review.innerHTML = "";
+  questions.forEach(function (q, i) {
+    if (userAnswers[i] !== q.answer) {
+      const li = document.createElement("li");
+      li.textContent = q.text + " → " + q.options[q.answer];
+      review.appendChild(li);
+    }
+  });
+}
+
+function restartQuiz() {
+  currentIndex = 0;
+  score = 0;
+  userAnswers = [];
+  resultScreen.classList.add("hidden");
+  quizScreen.classList.remove("hidden");
+  showQuestion();
+}
+
+// ---------- Events ----------
+nextBtn.addEventListener("click", nextQuestion);
+document.getElementById("restart-btn").addEventListener("click", restartQuiz);
+
+showQuestion();
+</script>
+</body>
+</html>
