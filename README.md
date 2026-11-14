@@ -21,4 +21,4 @@ ES modules do not work from `file://`, so serve the folder locally:
 2. `python -m http.server 8000` in this folder, then open http://localhost:8000
 
 ## Screenshot
-_Add one screenshot here (e.g. `screenshot.png`) before submitting._
+![API image](image-1.png)
